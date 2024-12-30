@@ -42,8 +42,10 @@ func (w *Faces) Optimize() (result FacesOptimizeResult, err error) {
 				if len(merge) < 2 {
 					// Nothing to merge.
 				} else if _, err := query.MergeFaces(merge, false); err != nil {
-					log.Errorf("%s (merge)", err)
+					log.Errorf("%s (merge) itr %d cluster %d count %d", err, i, j, len(merge))
 				} else {
+					// not exactly right, potentially overcounting
+					// see https://github.com/photoprism/photoprism/issues/3124#issuecomment-2558299360
 					result.Merged += len(merge)
 				}
 

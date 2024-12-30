@@ -178,7 +178,9 @@ func PurgeOrphanFaces(faceIds []string, ignored bool) (affected int, err error) 
 		} else if result.RowsAffected > 0 {
 			affected += int(result.RowsAffected)
 		} else {
-			affected += len(ids)
+			// see https://github.com/photoprism/photoprism/issues/3124#issuecomment-2558299360
+			log.Debugf("faces: no affected rows for purge in batch %d - %d", i, j)
+			//affected += len(ids)
 		}
 	}
 
@@ -214,9 +216,9 @@ func MergeFaces(merge entity.Faces, ignored bool) (merged *entity.Face, err erro
 	if removed, err := PurgeOrphanFaces(merge.IDs(), ignored); err != nil {
 		return merged, err
 	} else if removed > 0 {
-		log.Debugf("faces: removed %d orphans for subject %s", removed, clean.Log(subjUID))
+		log.Debugf("faces: removed %d orphans of %d canidates for subject %s", removed, len(merge), clean.Log(subjUID))
 	} else {
-		log.Warnf("faces: failed removing merged clusters for subject %s", clean.Log(subjUID))
+		return merged, fmt.Errorf("faces: failed to remove any orphan clusters of %d canidates for subject %s", len(merge), clean.Log(subjUID))
 	}
 
 	return merged, err
